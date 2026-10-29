@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta property="og:title" content="ULTRAVOX — plugin vocal gratuit"><meta property="og:image" content="img/og.jpg">
+<title>ULTRAVOX</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="ULTRAVOX, plugin vocal gratuit pour Mac développé par Saan : préampli, autotune, EQ, 6 compresseurs, de-esser, delay, reverb. VST3, AU et Standalone.">
+<link rel="icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..900&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>/* Layout: the plugin's own world — deep navy liquid behind glass panels; one centred hero, then full-width bands with a sticky module index. Single dark look on purpose. */
+:root{
+  --ink:#050911; --deep:#08101e; --panel:rgba(14,24,42,.72); --panel-solid:#0d1728;
+  --line:rgba(150,185,255,.14); --line-strong:rgba(150,185,255,.28);
+  --text:#e9effa; --muted:#93a3c0; --faint:#5f6f8c;
+  --ice:#9fd0ff; --accent:#5aa9ff; --accent-ink:#04101f;
+  --f-display:"Inter",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-body:"Inter",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --s1:.75rem; --s2:.875rem; --s3:1rem; --s4:1.125rem; --s5:1.5rem; --s6:clamp(1.75rem,3.4vw,2.6rem);
+  --gutter-l:max(16px,env(safe-area-inset-left,0px)); --gutter-r:max(16px,env(safe-area-inset-right,0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}.js .reveal{opacity:1;transform:none}.hero-shot{--p:1!important}}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--f-body);font-size:var(--s3);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--ink)}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ice);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:var(--gutter-l);padding-right:var(--gutter-r)}
+.wrap.narrow{max-width:820px}
+
+/* liquid backdrop (the plugin's background), fixed and dimmed toward the bottom */
+.liquid{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--ink)}
+.liquid span{position:absolute;pointer-events:none}
+/* two copies of the plugin's liquid texture drifting against each other = flowing surface */
+.lq{inset:-18%;background:url("img/liquid.jpg") center/cover no-repeat;will-change:transform}
+.lq1{animation:flowA 38s ease-in-out infinite alternate}
+.lq2{opacity:.55;mix-blend-mode:screen;transform:scaleX(-1);animation:flowB 52s ease-in-out infinite alternate;filter:hue-rotate(-18deg) saturate(1.3)}
+@keyframes flowA{0%{transform:translate3d(-3%,-2%,0) scale(1.05) rotate(-2deg)}50%{transform:translate3d(3%,2%,0) scale(1.15) rotate(2deg)}100%{transform:translate3d(-1%,4%,0) scale(1.08) rotate(-1deg)}}
+@keyframes flowB{0%{transform:scaleX(-1) translate3d(4%,3%,0) scale(1.12) rotate(3deg)}50%{transform:scaleX(-1) translate3d(-4%,-3%,0) scale(1.04) rotate(-3deg)}100%{transform:scaleX(-1) translate3d(2%,-5%,0) scale(1.18) rotate(1deg)}}
+/* slow blue light blobs */
+.glow{width:60vmax;height:60vmax;border-radius:50%;filter:blur(60px);mix-blend-mode:screen;opacity:.5;will-change:transform}
+.g1{left:-15vmax;top:-20vmax;background:radial-gradient(circle,rgba(40,120,255,.55),transparent 65%);animation:blobA 24s ease-in-out infinite alternate}
+.g2{right:-20vmax;top:10vh;background:radial-gradient(circle,rgba(110,90,255,.4),transparent 65%);animation:blobB 31s ease-in-out infinite alternate}
+.g3{left:20vw;bottom:-35vmax;background:radial-gradient(circle,rgba(30,200,255,.3),transparent 65%);animation:blobA 27s ease-in-out infinite alternate-reverse}
+@keyframes blobA{to{transform:translate3d(25vw,18vh,0) scale(1.2)}}
+@keyframes blobB{to{transform:translate3d(-22vw,-12vh,0) scale(.85)}}
+.vig{inset:0;background:radial-gradient(120% 75% at 50% 0%,rgba(5,9,17,0) 0%,rgba(5,9,17,.5) 55%,var(--ink) 100%)}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(5,9,17,.72);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:1.5rem;height:64px}
+.brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-weight:800;letter-spacing:.32em;font-size:.95rem}
+.brand img{border-radius:8px}
+.top-nav{display:flex;gap:1.4rem;margin-left:auto;font-size:var(--s2);color:var(--muted)}
+.top-nav a{text-decoration:none}
+.top-nav a:hover{color:var(--text)}
+.top-dl{text-decoration:none;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.55rem .95rem;border-radius:999px;background:var(--text);color:var(--accent-ink)}
+.top-dl:hover{background:var(--ice)}
+@media (max-width:720px){.top-nav{display:none}.top-dl{margin-left:auto}}
+
+/* hero */
+.hero{padding-block:clamp(2.5rem,6vw,4.5rem) 0;text-align:center}
+.hero-in{display:flex;flex-direction:column;align-items:center;gap:1.4rem}
+.eyebrow{margin:0;font-family:var(--f-mono);font-size:var(--s1);letter-spacing:.22em;color:var(--ice);display:flex;align-items:center;gap:.6rem}
+.led{width:8px;height:8px;border-radius:50%;background:#45e39a;box-shadow:0 0 10px #45e39a}
+.wordmark{margin:0;font-family:var(--f-display);font-weight:800;font-size:clamp(2.6rem,11vw,8.4rem);line-height:.95;letter-spacing:.2em;padding-left:.2em;
+  background:linear-gradient(180deg,#ffffff 20%,#b9d6ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 8px 40px rgba(60,140,255,.35))}
+.lede{margin:0;max-width:40rem;font-size:clamp(1.05rem,1.6vw,1.25rem);color:#cdd8ec;text-wrap:balance}
+.cta{display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;align-items:center}
+.cta.center{margin-top:2.5rem}
+.btn-dl{display:inline-flex;flex-direction:column;align-items:center;gap:.15rem;text-decoration:none;padding:.95rem 1.9rem;border-radius:14px;
+  background:linear-gradient(180deg,#8cc7ff,#4a96ff);color:var(--accent-ink);font-weight:800;font-size:1.05rem;letter-spacing:.01em;
+  box-shadow:0 10px 40px -8px rgba(74,150,255,.7),inset 0 1px 0 rgba(255,255,255,.6);transition:transform .2s,box-shadow .2s}
+.btn-dl span{font-family:var(--f-mono);font-weight:500;font-size:.72rem;letter-spacing:.06em;opacity:.75}
+.btn-dl:hover{transform:translateY(-2px);box-shadow:0 16px 50px -8px rgba(74,150,255,.9),inset 0 1px 0 rgba(255,255,255,.6)}
+.btn-dl.big{padding:1.1rem 2.4rem;font-size:1.15rem}
+.btn-ghost{text-decoration:none;padding:.95rem 1.4rem;border-radius:14px;border:1px solid var(--line-strong);color:var(--text);font-weight:600;background:rgba(10,18,34,.4)}
+.btn-ghost:hover{border-color:var(--ice)}
+.specs{margin:0;font-family:var(--f-mono);font-size:var(--s1);color:var(--muted);letter-spacing:.06em}
+.hero-shot{margin-top:clamp(1.5rem,3vw,2.25rem);perspective:1600px}
+.tilt{position:relative;border-radius:14px;transform-origin:50% 100%;will-change:transform;
+  transform:translateY(calc((1 - var(--p,0)) * 40px)) rotateX(calc((1 - var(--p,0)) * 26deg)) scale(calc(.9 + var(--p,0) * .1));
+  box-shadow:0 40px 120px -30px rgba(40,120,255,.55),0 0 0 1px rgba(0,0,0,.6);animation:rise 1.2s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;translate:0 60px}to{opacity:1;translate:0 0}}
+.tilt img{width:100%;border-radius:14px;border:1px solid var(--line-strong)}
+/* light sweep across the glass while scrolling */
+.tilt::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,rgba(170,210,255,.16) 45%,transparent 60%) no-repeat;
+  background-size:250% 100%;background-position:calc(120% - var(--p,0) * 140%) 0;mix-blend-mode:screen}
+.byline{margin:.2rem 0 0;font-size:var(--s2);color:var(--muted)}
+.byline b{color:var(--text);letter-spacing:.06em}
+
+/* scroll reveal */
+.js .reveal{opacity:0;transform:translateY(36px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.js .reveal.in{opacity:1;transform:none}
+.shot img{transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.shot:hover img{transform:scale(1.012)}
+
+/* creator */
+.maker{display:flex;gap:2rem;align-items:center;padding:clamp(1.5rem,4vw,2.75rem);border-radius:20px;border:1px solid var(--line-strong);
+  background:linear-gradient(135deg,rgba(40,90,200,.22),rgba(14,24,42,.72) 55%);backdrop-filter:blur(10px)}
+.maker img{border-radius:20px;flex:none;box-shadow:0 10px 40px -10px rgba(74,150,255,.7)}
+.maker h2{margin:.3rem 0 .8rem;font-size:var(--s6);line-height:1.1;letter-spacing:-.02em}
+.maker h2 span{background:linear-gradient(90deg,#9fd0ff,#8f7bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.maker p:last-child{margin:0;color:#cdd8ec;max-width:46rem}
+@media (max-width:640px){.maker{flex-direction:column;align-items:flex-start}.maker img{width:64px;height:64px}}
+
+/* bands */
+.band{padding-block:clamp(4rem,9vw,7rem) 0}
+#faq{padding-bottom:clamp(4rem,9vw,7rem)}
+.sec-head{max-width:46rem;margin-bottom:2.4rem}
+.kicker{margin:0 0 .6rem;font-family:var(--f-mono);font-size:var(--s1);letter-spacing:.24em;color:var(--ice)}
+h2{margin:0 0 .8rem;font-size:var(--s6);line-height:1.15;font-weight:800;letter-spacing:-.01em;text-wrap:balance}
+.sec-head p{margin:0;color:var(--muted)}
+
+/* chips, like the plugin's navigation bar */
+.chip{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;font-size:.74rem;letter-spacing:.12em;padding:.5rem .9rem;border-radius:999px;
+  border:1.5px solid color-mix(in srgb,var(--c) 70%,transparent);background:rgba(10,16,30,.85);color:#f2f6ff;white-space:nowrap;transition:background .2s,transform .2s}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.chip:hover{background:color-mix(in srgb,var(--c) 22%,#0a101e);transform:translateY(-1px)}
+.chain{display:flex;flex-direction:column;gap:.8rem;padding:1.4rem;border-radius:18px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(8px)}
+.chain-row{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center}
+.chain-label{font-family:var(--f-mono);font-size:var(--s1);color:var(--faint);letter-spacing:.14em;padding-inline:.3rem}
+
+/* screenshots */
+.tabs{display:inline-flex;gap:.3rem;padding:.3rem;border-radius:12px;border:1px solid var(--line);background:rgba(8,14,26,.8);margin-bottom:1.2rem}
+.tab{font:700 .74rem/1 var(--f-body);letter-spacing:.2em;color:var(--muted);background:none;border:1px solid transparent;border-radius:9px;padding:.7rem 1.1rem;cursor:pointer}
+.tab.on{color:var(--text);border-color:var(--line-strong);background:rgba(90,169,255,.12);box-shadow:inset 0 -2px 0 var(--accent)}
+.shot{margin:0}
+.shot img{width:100%;border-radius:12px;border:1px solid var(--line-strong);box-shadow:0 30px 90px -40px rgba(40,120,255,.6)}
+.shot figcaption{margin-top:.9rem;color:var(--muted);font-size:var(--s2)}
+.feats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin-top:3rem;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.feat{background:var(--deep);padding:1.5rem 1.4rem}
+.feat h3{margin:0 0 .5rem;font-family:var(--f-mono);font-size:var(--s2);font-weight:500;letter-spacing:.14em;color:var(--ice)}
+.feat p{margin:0;font-size:var(--s2);color:#c3cee3}
+@media (max-width:900px){.feats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.feats{grid-template-columns:1fr}}
+
+/* modules */
+.mod-layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:2.5rem;align-items:start}
+.mod-index{position:sticky;top:calc(84px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:.15rem}
+.mod-index a{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-size:.74rem;font-weight:700;letter-spacing:.12em;color:var(--muted);padding:.42rem .6rem;border-radius:8px}
+.mod-index a i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+.mod-index a:hover,.mod-index a.on{color:var(--text);background:rgba(150,185,255,.08)}
+.mod-list{display:flex;flex-direction:column;gap:1.6rem;min-width:0}
+.module{border:1px solid var(--line);border-radius:18px;background:var(--panel);backdrop-filter:blur(8px);padding:clamp(1.2rem,3vw,2rem);
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--c) 30%,transparent)}
+.mod-head{display:flex;gap:1rem;align-items:flex-start}
+.mod-pos{font-family:var(--f-mono);font-size:var(--s1);color:var(--faint);padding-top:.5rem;min-width:1.6rem}
+.module h3{margin:0;display:flex;align-items:center;gap:.65rem;font-size:clamp(1.3rem,2.4vw,1.7rem);font-weight:800;letter-spacing:.08em;color:var(--c)}
+.module h3 i{width:11px;height:11px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c)}
+.mod-short{margin:.15rem 0 0;color:var(--text);font-weight:600}
+.mod-short span{color:var(--faint);font-family:var(--f-mono);font-weight:400;font-size:var(--s1);letter-spacing:.08em}
+.mod-intro{margin:1rem 0 1.4rem;color:#c3cee3;max-width:62ch}
+.params{margin:0;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.prm{display:grid;grid-template-columns:minmax(0,10rem) minmax(0,12rem) minmax(0,1fr);gap:1.2rem;padding:.8rem 0;border-bottom:1px solid var(--line)}
+.prm dt{font-weight:700;font-size:var(--s2);letter-spacing:.06em;text-transform:uppercase}
+.prm dd{margin:0}
+.prm .rng{font-family:var(--f-mono);font-size:.78rem;color:var(--ice);font-variant-numeric:tabular-nums;padding-top:.1rem}
+.prm .txt{font-size:var(--s2);color:#c3cee3}
+@media (max-width:900px){.mod-layout{grid-template-columns:1fr}.mod-index{position:static;flex-direction:row;flex-wrap:wrap;gap:.3rem}}
+@media (max-width:640px){.prm{grid-template-columns:1fr;gap:.2rem}.mod-pos{display:none}}
+
+.plates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.6rem}
+.plate{margin:0}
+.plate img{border-radius:8px;border:1px solid var(--line-strong)}
+.plate figcaption{font-size:var(--s1);color:var(--muted);margin-top:.5rem;line-height:1.5}
+.plate figcaption b{color:var(--text);margin-right:.35rem;letter-spacing:.06em}
+@media (max-width:640px){.plates{grid-template-columns:1fr}}
+.modes{list-style:none;margin:1.4rem 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem 1.4rem}
+.modes li{display:flex;flex-direction:column;font-size:var(--s2);padding:.6rem .8rem;border-radius:10px;background:rgba(143,123,255,.07);border:1px solid rgba(143,123,255,.2)}
+.modes b{color:var(--c);letter-spacing:.04em}
+.modes span{color:var(--muted)}
+@media (max-width:640px){.modes{grid-template-columns:1fr}}
+
+/* install */
+.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem}
+.steps li{counter-increment:s;padding:1.5rem;border-radius:16px;border:1px solid var(--line);background:var(--panel)}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;border:1.5px solid var(--accent);color:var(--ice);font:600 .85rem var(--f-mono);margin-bottom:1rem}
+.steps b{font-size:var(--s4)}
+.steps p{margin:.5rem 0 0;font-size:var(--s2);color:#c3cee3}
+kbd{font-family:var(--f-mono);font-size:.78em;padding:.1em .45em;border-radius:5px;border:1px solid var(--line-strong);background:rgba(255,255,255,.05);white-space:nowrap}
+@media (max-width:820px){.steps{grid-template-columns:1fr}}
+.term{margin-top:1.6rem}
+.term>p{margin:0 0 .7rem;color:var(--muted);font-size:var(--s2)}
+.term-box{display:flex;gap:.8rem;align-items:center;padding:.9rem 1rem;border-radius:12px;background:#02050b;border:1px solid var(--line-strong)}
+.term-box code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font-family:var(--f-mono);font-size:.78rem;color:#bfe3ff}
+.copy{flex:none;font:700 .72rem var(--f-body);letter-spacing:.1em;text-transform:uppercase;padding:.5rem .8rem;border-radius:8px;border:1px solid var(--line-strong);background:rgba(90,169,255,.12);color:var(--text);cursor:pointer}
+
+/* faq */
+.qa{border-bottom:1px solid var(--line)}
+.qa summary{cursor:pointer;list-style:none;padding:1.15rem 0;font-weight:700;font-size:var(--s4);display:flex;justify-content:space-between;gap:1rem}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::after{content:"+";font-family:var(--f-mono);color:var(--ice);font-weight:400}
+.qa[open] summary::after{content:"−"}
+.qa p{margin:0 0 1.2rem;color:#c3cee3;max-width:62ch}
+
+.foot{border-top:1px solid var(--line);background:rgba(3,6,12,.9);padding-block:2rem calc(2rem + env(safe-area-inset-bottom,0px))}
+.foot-in{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between}
+.foot p{margin:0;color:var(--faint);font-size:var(--s1);font-family:var(--f-mono);letter-spacing:.06em}
+.foot .brand{font-size:.8rem}
+
+.foot a{color:var(--ice)}
+</style>
+</head>
+<body>
+
+<div class="liquid" aria-hidden="true"><span class="lq lq1"></span><span class="lq lq2"></span><span class="glow g1"></span><span class="glow g2"></span><span class="glow g3"></span><span class="vig"></span></div>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#top"><img src="img/icon-256.png" alt="" width="34" height="34"><span>ULTRAVOX</span></a>
+    <nav class="top-nav" aria-label="Sections">
+      <a href="../index.html">Accueil</a><a href="#apercu">Aperçu</a><a href="#modules">Modules</a><a href="#installation">Installation</a><a href="#faq">FAQ</a>
+    </nav>
+    <a class="top-dl" href="https://github.com/saanofficiel-commits/ULTRAVOX/releases/download/v0.9.18/ULTRAVOX-0.9.18.dmg" rel="noopener">Télécharger</a>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap hero-in">
+    <p class="eyebrow"><span class="led"></span>VOCAL CHANNEL · v0.9.18 · GRATUIT</p>
+    <h1 class="wordmark">ULTRAVOX</h1>
+    <p class="lede">Toute la chaîne vocale dans un seul plugin&nbsp;: préampli, autotune, EQ, six compresseurs, de-esser et effets. Pensé pour le rap et la pop, gratuit pour Mac.</p>
+    <div class="cta">
+      <a class="btn-dl " href="https://github.com/saanofficiel-commits/ULTRAVOX/releases/download/v0.9.18/ULTRAVOX-0.9.18.dmg" rel="noopener">Télécharger pour Mac<span>DMG · 27 Mo · v0.9.18</span></a>
+      <a class="btn-ghost" href="#modules">Voir chaque réglage</a>
+    </div>
+    <p class="specs">macOS 11+ · Apple Silicon &amp; Intel · VST3 · AU · Standalone</p>
+    <p class="byline">Conçu et développé par <b>Saan</b></p>
+  </div>
+  <div class="wrap hero-shot" id="hero-shot">
+    <div class="tilt"><img src="img/shot-channel.webp" alt="Interface d’ULTRAVOX, page CHANNEL" width="1592" height="900"></div>
+  </div>
+</section>
+
+<section class="band" id="chaine">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">LA CHAÎNE</p>
+      <h2>Treize modules, dans l'ordre où la voix les traverse.</h2>
+      <p>Le canal (préampli → de-esser) façonne la voix, les effets l'habillent, MULTI la tient à la fin. Tu changes l'ordre en glissant les modules dans la barre du haut du plugin. Clique un module pour voir ses réglages.</p>
+    </div>
+    
+<div class="chain reveal" aria-label="Ordre du signal">
+  <div class="chain-row"><span class="chain-label">IN</span><a class="chip" href="#preamp" style="--c:#4aa8ff"><i></i>PREAMP</a><a class="chip" href="#autotune" style="--c:#8f7bff"><i></i>AUTOTUNE</a><a class="chip" href="#eq" style="--c:#ffd84a"><i></i>EQ</a><a class="chip" href="#comp" style="--c:#ff5a5a"><i></i>COMP</a><a class="chip" href="#deess" style="--c:#34d399"><i></i>DE-ESS</a></div>
+  <div class="chain-row"><span class="chain-label">→</span><a class="chip" href="#ultracomp" style="--c:#ffb020"><i></i>ULTRACOMP</a><a class="chip" href="#gate" style="--c:#2fe0b0"><i></i>GATE</a><a class="chip" href="#ultrapitch" style="--c:#22d3ee"><i></i>ULTRAPITCH</a><a class="chip" href="#ultrachorus" style="--c:#ff7ac0"><i></i>ULTRACHORUS</a><a class="chip" href="#ultraflanger" style="--c:#5be3a0"><i></i>ULTRAFLANGER</a><a class="chip" href="#ultradelay" style="--c:#ff8a3d"><i></i>ULTRADELAY</a><a class="chip" href="#ultraverb" style="--c:#8f7bff"><i></i>ULTRAVERB</a><a class="chip" href="#multi" style="--c:#ffd84a"><i></i>MULTI</a><span class="chain-label">OUT</span></div>
+</div>
+  </div>
+</section>
+
+<section class="band" id="apercu">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">TROIS PAGES</p>
+      <h2>Une interface faite pour être lue d'un coup d'œil.</h2>
+    </div>
+    <div class="tabs" role="group" aria-label="Pages du plugin"><button type="button" class="tab on" id="tab-channel" data-shot="channel" aria-pressed="true">CHANNEL</button><button type="button" class="tab" id="tab-effects" data-shot="effects" aria-pressed="false">EFFECTS</button><button type="button" class="tab" id="tab-multi" data-shot="multi" aria-pressed="false">MULTI</button></div>
+    <div class="shots reveal"><figure class="shot" data-shot="channel"><img src="img/shot-channel.webp" alt="Page CHANNEL d’ULTRAVOX" width="1592" height="900" loading="eager"><figcaption>Préampli, autotune, EQ, compresseur et de-esser sur une seule page, comme une tranche de console.</figcaption></figure><figure class="shot" data-shot="effects" hidden><img src="img/shot-effects.webp" alt="Page EFFECTS d’ULTRAVOX" width="1592" height="900" loading="lazy"><figcaption>Les effets en racks repliables : UltraComp, Gate, UltraPitch, Chorus, Flanger, Delay et Verb.</figcaption></figure><figure class="shot" data-shot="multi" hidden><img src="img/shot-multi.webp" alt="Page MULTI d’ULTRAVOX" width="1592" height="900" loading="lazy"><figcaption>La dynamique multibande : jusqu&#x27;à six bandes posées sur le spectre en direct.</figcaption></figure></div>
+    <div class="feats reveal"><div class="feat"><h3>AUTO MIX</h3><p>Joue ta voix quelques secondes : ULTRAVOX écoute puis règle l&#x27;EQ, le compresseur, le de-esser, l&#x27;envoi de réverbe et le niveau. Un clic sur la flèche retour annule tout.</p></div><div class="feat"><h3>AUTO KEY</h3><p>Dépose ton instru sur l&#x27;autotune : la tonalité, la gamme et l&#x27;accordage sont trouvés et réglés tout seuls.</p></div><div class="feat"><h3>LOW LATENCY</h3><p>Pour enregistrer : tout le plugin passe à environ 5 ms de latence. Tu chantes avec l&#x27;autotune dans le casque sans décalage.</p></div><div class="feat"><h3>NOTES</h3><p>Enregistre une prise, vois chaque note sur une grille et corrige-les une par une.</p></div><div class="feat"><h3>PRESETS · A/B</h3><p>Bibliothèque de presets, comparaison A/B, copie A &gt; B, annuler / rétablir à l&#x27;infini.</p></div><div class="feat"><h3>ORDRE LIBRE</h3><p>Glisse les modules dans la barre du haut pour changer l&#x27;ordre de la chaîne, sans clic audio.</p></div></div>
+  </div>
+</section>
+
+<section class="band" id="modules">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">TOUS LES RÉGLAGES</p>
+      <h2>Ce que fait chaque bouton.</h2>
+      <p>Les noms sont ceux affichés dans le plugin. Survole un bouton dans ULTRAVOX pour retrouver la même aide en bulle.</p>
+    </div>
+    <div class="mod-layout">
+      <nav class="mod-index" aria-label="Modules"><a href="#preamp" style="--c:#4aa8ff"><i></i>PREAMP</a><a href="#autotune" style="--c:#8f7bff"><i></i>AUTOTUNE</a><a href="#eq" style="--c:#ffd84a"><i></i>EQ</a><a href="#comp" style="--c:#ff5a5a"><i></i>COMP</a><a href="#deess" style="--c:#34d399"><i></i>DE-ESS</a><a href="#ultracomp" style="--c:#ffb020"><i></i>ULTRACOMP</a><a href="#gate" style="--c:#2fe0b0"><i></i>GATE</a><a href="#ultrapitch" style="--c:#22d3ee"><i></i>ULTRAPITCH</a><a href="#ultrachorus" style="--c:#ff7ac0"><i></i>ULTRACHORUS</a><a href="#ultraflanger" style="--c:#5be3a0"><i></i>ULTRAFLANGER</a><a href="#ultradelay" style="--c:#ff8a3d"><i></i>ULTRADELAY</a><a href="#ultraverb" style="--c:#8f7bff"><i></i>ULTRAVERB</a><a href="#multi" style="--c:#ffd84a"><i></i>MULTI</a></nav>
+      <div class="mod-list">
+<article class="module reveal" id="preamp" style="--c:#4aa8ff">
+  <header class="mod-head">
+    <span class="mod-pos">01</span>
+    <div>
+      <h3><i></i>PREAMP</h3>
+      <p class="mod-short">Préampli classe A <span>· page CHANNEL</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Un préampli classe A à transformateur, suréchantillonné 4×, avec l&#x27;EQ de console qui va avec. C&#x27;est la première couleur de la voix, avant tout le reste.</p>
+  <dl class="params"><div class="prm"><dt>Gain</dt><dd class="rng">−12 à +24 dB</dd><dd class="txt">Le niveau qui entre dans le préampli, par pas de 3 dB. Plus de gain = plus de caractère.</dd></div><div class="prm"><dt>Drive</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La couleur harmonique classe A : les harmoniques paires arrivent en premier, le son s&#x27;épaissit sans devenir agressif.</dd></div><div class="prm"><dt>Iron</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La saturation du transformateur. Elle agit d&#x27;abord dans les graves et donne du poids au bas du spectre.</dd></div><div class="prm"><dt>HPF</dt><dd class="rng">Off · 50 · 80 · 160 · 300 Hz</dd><dd class="txt">Coupe-bas à 18 dB/oct. Retire le grondement, les bruits de pied de micro et le souffle de la bouche.</dd></div><div class="prm"><dt>Phase</dt><dd class="rng">On / Off</dd><dd class="txt">Inverse la polarité du signal.</dd></div><div class="prm"><dt>Match</dt><dd class="rng">On / Off</dd><dd class="txt">Level Match : compense le gain pour que le volume reste le même. Tu juges la couleur, pas le volume.</dd></div><div class="prm"><dt>EQ</dt><dd class="rng">On / Off</dd><dd class="txt">Active l&#x27;EQ de console du préampli.</dd></div><div class="prm"><dt>HF</dt><dd class="rng">±16 dB</dd><dd class="txt">Plateau à 12 kHz : l&#x27;air et la brillance de la voix.</dd></div><div class="prm"><dt>Mid</dt><dd class="rng">Off · 360 Hz → 7,2 kHz · ±18 dB</dd><dd class="txt">Une cloche sur six fréquences fixes (360, 700 Hz, 1,6, 3,2, 4,8, 7,2 kHz) pour creuser le carton ou pousser la présence.</dd></div><div class="prm"><dt>LF</dt><dd class="rng">Off · 35 · 60 · 110 · 220 Hz · ±16 dB</dd><dd class="txt">Plateau grave : le corps et la chaleur.</dd></div><div class="prm"><dt>Output</dt><dd class="rng">−12 à +12 dB</dd><dd class="txt">Le niveau en sortie du préampli.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="autotune" style="--c:#8f7bff">
+  <header class="mod-head">
+    <span class="mod-pos">02</span>
+    <div>
+      <h3><i></i>AUTOTUNE</h3>
+      <p class="mod-short">Correction de justesse <span>· page CHANNEL</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Une correction de hauteur en temps réel, de la plus naturelle à l&#x27;effet robotique. Auto Key trouve la tonalité de ton morceau à ta place.</p>
+  <dl class="params"><div class="prm"><dt>Key / Scale</dt><dd class="rng">12 tonalités · 7 gammes</dd><dd class="txt">La tonalité et la gamme : Chromatique, Majeure, Mineure, Mineure harmonique, Penta majeure, Penta mineure, Blues.</dd></div><div class="prm"><dt>Clavier</dt><dd class="rng">12 notes</dd><dd class="txt">Clique une note pour la retirer des notes autorisées (ou la remettre).</dd></div><div class="prm"><dt>Auto Key</dt><dd class="rng">WAV · AIFF · MP3 · FLAC…</dd><dd class="txt">Dépose ton instru ou ton morceau : la tonalité, la gamme et l&#x27;accordage (432 Hz par exemple) sont détectés et réglés sur l&#x27;autotune.</dd></div><div class="prm"><dt>Retune</dt><dd class="rng">0 – 400 ms</dd><dd class="txt">La vitesse à laquelle la note est tenue juste. À droite = plus rapide et plus serré ; tout à droite (0 ms) = effet robotique. Naturel : 10 à 25 ms.</dd></div><div class="prm"><dt>Transition</dt><dd class="rng">0 – 800 ms</dd><dd class="txt">Après chaque changement de note, la correction arrive sur ce temps : les glissés du chanteur restent naturels. 0 = saut instantané (hard tune). Naturel : 60 à 150 ms.</dd></div><div class="prm"><dt>Amount</dt><dd class="rng">0 – 100 %</dd><dd class="txt">L&#x27;intensité de la correction.</dd></div><div class="prm"><dt>Humanize</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Corrige plus lentement les notes tenues pour qu&#x27;elles restent vivantes.</dd></div><div class="prm"><dt>Flex</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Laisse intactes les notes expressives qui sont loin de la cible.</dd></div><div class="prm"><dt>Transpose</dt><dd class="rng">±12 demi-tons</dd><dd class="txt">Transpose la voix corrigée.</dd></div><div class="prm"><dt>Input type</dt><dd class="rng">Soprano · Alto / Ténor · Voix grave · Instrument</dd><dd class="txt">La plage où le détecteur cherche la note. Le bon réglage évite les erreurs d&#x27;octave.</dd></div><div class="prm"><dt>Natural vibrato</dt><dd class="rng">±12 dB</dd><dd class="txt">À −12 dB le vibrato du chanteur disparaît, à +12 dB il est exagéré. Indépendant du retune.</dd></div><div class="prm"><dt>Reference A4</dt><dd class="rng">420 – 460 Hz</dd><dd class="txt">Le La de référence, pour les morceaux accordés autrement qu&#x27;à 440 Hz.</dd></div><div class="prm"><dt>Vibrato artificiel</dt><dd class="rng">Depth 0–200 ct · Rate 0,5–12 Hz</dd><dd class="txt">Ajoute un vibrato à la voix corrigée. Delay (0 – 1,5 s) le fait démarrer après le début de la note, Onset (0 – 2 s) le fait monter doucement, Humanize varie vitesse et profondeur comme un vrai chanteur, Shape choisit l&#x27;onde : sinus, triangle ou asymétrique.</dd></div><div class="prm"><dt>Notes</dt><dd class="rng">Éditeur</dd><dd class="txt">Enregistre ta prise, vois ses notes sur une grille et corrige-les une par une : déplacer, centrer sur la gamme, STEADY pour lisser les notes qui tremblent.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="eq" style="--c:#ffd84a">
+  <header class="mod-head">
+    <span class="mod-pos">03</span>
+    <div>
+      <h3><i></i>EQ</h3>
+      <p class="mod-short">Égaliseur à points libres <span>· page CHANNEL</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Jusqu&#x27;à 15 points posés où tu veux sur la courbe, 10 types de filtres, cinq caractères de console et un analyseur de spectre en direct.</p>
+  <dl class="params"><div class="prm"><dt>Points</dt><dd class="rng">jusqu&#x27;à 15</dd><dd class="txt">Double-clic sur la courbe pour ajouter un point. Glisser = fréquence et gain (Shift = réglage fin), molette = Q, clic droit = type, on/off, supprimer.</dd></div><div class="prm"><dt>Type</dt><dd class="rng">10 filtres</dd><dd class="txt">Bell, Low Shelf, Low Cut, High Shelf, High Cut, Notch, Band Pass, Tilt Shelf, Flat Tilt, All Pass.</dd></div><div class="prm"><dt>Freq</dt><dd class="rng">20 Hz – 20 kHz</dd><dd class="txt">La fréquence du point.</dd></div><div class="prm"><dt>Gain</dt><dd class="rng">±24 dB</dd><dd class="txt">Monter ou creuser à cette fréquence.</dd></div><div class="prm"><dt>Q / Reso</dt><dd class="rng">0,1 – 18</dd><dd class="txt">La largeur de la cloche : petit = large et musical, grand = étroit et chirurgical.</dd></div><div class="prm"><dt>Slope</dt><dd class="rng">6 à 48 dB/oct</dd><dd class="txt">La pente des coupe-bas et coupe-haut.</dd></div><div class="prm"><dt>Character</dt><dd class="rng">Clean · British · Iron · Passive · Silk</dd><dd class="txt">La couleur de console appliquée à l&#x27;EQ, du neutre au plus typé.</dd></div><div class="prm"><dt>Colour</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Le dosage de ce caractère.</dd></div><div class="prm"><dt>Atten</dt><dd class="rng">0 – 16 dB</dd><dd class="txt">Mode Passive seulement : l&#x27;atténuation simultanée des graves, la vieille astuce boost + atten.</dd></div><div class="prm"><dt>Trim</dt><dd class="rng">±12 dB</dd><dd class="txt">Le niveau de sortie de l&#x27;EQ.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="comp" style="--c:#ff5a5a">
+  <header class="mod-head">
+    <span class="mod-pos">04</span>
+    <div>
+      <h3><i></i>COMP</h3>
+      <p class="mod-short">Six compresseurs <span>· page CHANNEL</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Six modèles de compresseurs, chacun avec sa propre façade et son caractère. Les réglages communs sont les mêmes partout, les façades ajoutent ceux du modèle.</p>
+  <dl class="params"><div class="prm"><dt>Modèle</dt><dd class="rng">Clean · VCA · FET · Opto · Tube · Vari-Mu</dd><dd class="txt">Le type de compresseur. Chaque modèle a sa réponse, sa vitesse et sa couleur.</dd></div><div class="prm"><dt>Input / Drive</dt><dd class="rng">−12 à +24 dB</dd><dd class="txt">Ce qui entre dans le compresseur. Sur les modèles à seuil fixe, plus d&#x27;entrée = plus de compression.</dd></div><div class="prm"><dt>Threshold</dt><dd class="rng">−60 à 0 dB</dd><dd class="txt">Le niveau à partir duquel il compresse.</dd></div><div class="prm"><dt>Ratio</dt><dd class="rng">1:1 à 20:1</dd><dd class="txt">La force de la compression au-dessus du seuil.</dd></div><div class="prm"><dt>Attack</dt><dd class="rng">0,02 – 100 ms</dd><dd class="txt">La vitesse de réaction. Lent = laisse passer l&#x27;attaque des consonnes.</dd></div><div class="prm"><dt>Release</dt><dd class="rng">5 ms – 5 s</dd><dd class="txt">Le temps pour revenir au repos.</dd></div><div class="prm"><dt>Knee</dt><dd class="rng">0 – 24 dB</dd><dd class="txt">Un départ plus doux autour du seuil.</dd></div><div class="prm"><dt>Makeup / Output</dt><dd class="rng">−12 à +24 dB</dd><dd class="txt">Rend le volume perdu. Auto Gain le fait automatiquement.</dd></div><div class="prm"><dt>Mix</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La compression parallèle : mélange voix compressée et voix d&#x27;origine.</dd></div><div class="prm"><dt>Colour</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La saturation propre au modèle.</dd></div><div class="prm"><dt>S/C HPF</dt><dd class="rng">20 – 500 Hz</dd><dd class="txt">Filtre le signal qui pilote la compression : les graves ne la déclenchent plus.</dd></div><div class="prm"><dt>HF emphasis</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Plus de réduction sur les sons brillants et sifflants.</dd></div><div class="prm"><dt>De-ess before comp</dt><dd class="rng">On / Off</dd><dd class="txt">Place le de-esser avant le compresseur au lieu d&#x27;après.</dd></div></dl>
+  <div class="plates"><figure class="plate"><img src="img/plate-clean.webp" alt="Façade du compresseur Clean d’ULTRAVOX" loading="lazy" width="904" height="348"><figcaption><b>Clean</b> Le leveling amplifier propre, à VU-mètre. Transparent, pour tenir la voix sans la colorer.</figcaption></figure><figure class="plate"><img src="img/plate-vca.webp" alt="Façade du compresseur VCA d’ULTRAVOX" loading="lazy" width="904" height="348"><figcaption><b>VCA</b> Le compresseur de bus. Tenue serrée, colle la voix au mix.</figcaption></figure><figure class="plate"><img src="img/plate-fet.webp" alt="Façade du compresseur FET d’ULTRAVOX" loading="lazy" width="904" height="348"><figcaption><b>FET</b> Le limiteur rapide et agressif. Attaque la voix, la met devant.</figcaption></figure><figure class="plate"><img src="img/plate-opto.webp" alt="Façade du compresseur Opto d’ULTRAVOX" loading="lazy" width="904" height="348"><figcaption><b>Opto</b> La cellule optique : lente, douce, dépendante du programme. Réglages Gain et Peak Reduction, HF emphasis.</figcaption></figure><figure class="plate"><img src="img/plate-tube.webp" alt="Façade du compresseur Tube d’ULTRAVOX" loading="lazy" width="904" height="348"><figcaption><b>Tube</b> Le valve leveller à lampes. Heat règle la chaleur des lampes.</figcaption></figure><figure class="plate"><img src="img/plate-varimu.webp" alt="Façade du compresseur Vari-Mu d’ULTRAVOX" loading="lazy" width="904" height="348"><figcaption><b>Vari-Mu</b> Le limiteur à lampes variable-mu. Time constant de 1 (rapide) à 6 (lent), une colle très douce.</figcaption></figure></div>
+</article>
+<article class="module reveal" id="deess" style="--c:#34d399">
+  <header class="mod-head">
+    <span class="mod-pos">05</span>
+    <div>
+      <h3><i></i>DE-ESS</h3>
+      <p class="mod-short">De-esser <span>· page CHANNEL</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Calme les S, les CH et les Z sans éteindre la voix. Tu vois la bande de sifflantes et tu la règles à la main sur l&#x27;affichage.</p>
+  <dl class="params"><div class="prm"><dt>Mode</dt><dd class="rng">Split · Wide</dd><dd class="txt">SPLIT : seuls les aigus sont réduits, le plus transparent. WIDE : toute la voix baisse légèrement sur chaque S, plus naturel sur certaines voix.</dd></div><div class="prm"><dt>Detection</dt><dd class="rng">Relative · Absolute</dd><dd class="txt">RELATIVE : le seuil suit le niveau de la voix (même résultat sur les passages doux et forts). ABSOLUTE : seuil fixe en dBFS.</dd></div><div class="prm"><dt>Freq / Band top</dt><dd class="rng">2 – 14 kHz · 3 – 20 kHz</dd><dd class="txt">Les deux poignées de la bande de sifflantes. Les S sont en général entre 5 et 10 kHz.</dd></div><div class="prm"><dt>Threshold</dt><dd class="rng">−60 à 0 dB</dd><dd class="txt">Plus bas = plus de S réduits. La ligne jaune le montre sur l&#x27;affichage.</dd></div><div class="prm"><dt>Range</dt><dd class="rng">0 – 24 dB</dd><dd class="txt">La réduction maximale.</dd></div><div class="prm"><dt>Sensitivity</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La sensibilité de la détection.</dd></div><div class="prm"><dt>Reaction</dt><dd class="rng">0,05 – 20 ms</dd><dd class="txt">La vitesse à laquelle il attrape un S.</dd></div><div class="prm"><dt>Recovery</dt><dd class="rng">5 – 500 ms</dd><dd class="txt">Le temps pour relâcher.</dd></div><div class="prm"><dt>Listen</dt><dd class="rng">On / Off</dd><dd class="txt">N&#x27;écoute que ce que le de-esser détecte, pour régler la bande à l&#x27;oreille.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="ultracomp" style="--c:#ffb020">
+  <header class="mod-head">
+    <span class="mod-pos">06</span>
+    <div>
+      <h3><i></i>ULTRACOMP</h3>
+      <p class="mod-short">Compresseur vocal moderne <span>· page EFFECTS</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Tient la voix bien devant, comme dans le rap et la pop d&#x27;aujourd&#x27;hui : attrape les crêtes, nivelle en douceur, ajoute de la densité en parallèle et de la présence après la compression. Un seul bouton principal, aucune latence.</p>
+  <dl class="params"><div class="prm"><dt>Push</dt><dd class="rng">0 – 100 %</dd><dd class="txt">À 0 la voix n&#x27;est pas touchée. En montant arrivent progressivement compression, densité, air et volume, jusqu&#x27;à une voix très dense et ronde à 100. Les seuils suivent le niveau de la voix : même comportement sur une prise douce ou forte.</dd></div><div class="prm"><dt>Style</dt><dd class="rng">Rap · Pop</dd><dd class="txt">RAP : plus rapide, plus serré, plus dense. POP : plus doux, plus d&#x27;air.</dd></div><div class="prm"><dt>Air</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Présence et air ajoutés après la compression : la voix avance sans devenir dure.</dd></div><div class="prm"><dt>Mix</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Le mélange avec la voix d&#x27;origine.</dd></div><div class="prm"><dt>Auto Gain</dt><dd class="rng">On / Off</dd><dd class="txt">Rend le niveau automatiquement, avec un petit gain qui grandit avec Push.</dd></div><div class="prm"><dt>Output</dt><dd class="rng">±12 dB</dd><dd class="txt">Le niveau de sortie.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="gate" style="--c:#2fe0b0">
+  <header class="mod-head">
+    <span class="mod-pos">07</span>
+    <div>
+      <h3><i></i>GATE</h3>
+      <p class="mod-short">Noise gate <span>· page EFFECTS</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Coupe le bruit, le souffle et la reprise de casque entre les phrases. L&#x27;affichage montre le niveau de la voix et tu tires directement la ligne du seuil.</p>
+  <dl class="params"><div class="prm"><dt>Threshold</dt><dd class="rng">−80 à 0 dB</dd><dd class="txt">Le gate s&#x27;ouvre quand la voix passe au-dessus.</dd></div><div class="prm"><dt>Return</dt><dd class="rng">0 – 24 dB</dd><dd class="txt">Il ne se referme que sous Threshold − Return, pour ne pas hacher la fin des notes.</dd></div><div class="prm"><dt>Attack</dt><dd class="rng">0,02 – 100 ms</dd><dd class="txt">La vitesse d&#x27;ouverture.</dd></div><div class="prm"><dt>Hold</dt><dd class="rng">0 – 1000 ms</dd><dd class="txt">Le temps pendant lequel il reste ouvert après que la voix est passée sous le seuil.</dd></div><div class="prm"><dt>Release</dt><dd class="rng">5 ms – 3 s</dd><dd class="txt">La vitesse de fermeture.</dd></div><div class="prm"><dt>Floor</dt><dd class="rng">−80 à 0 dB</dd><dd class="txt">Jusqu&#x27;où il ferme : −80 dB = silence entre les phrases, −10 dB = juste un peu moins fort.</dd></div><div class="prm"><dt>Flip</dt><dd class="rng">On / Off</dd><dd class="txt">Gate inversé : seul ce qui est sous le seuil passe. Pratique pour entendre ce que le gate retire.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="ultrapitch" style="--c:#22d3ee">
+  <header class="mod-head">
+    <span class="mod-pos">08</span>
+    <div>
+      <h3><i></i>ULTRAPITCH</h3>
+      <p class="mod-short">Pitch et formant <span>· page EFFECTS</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Change la hauteur et le timbre de la voix séparément, par resynthèse synchrone. Ajoute environ 32 ms de latence, compensée par ton logiciel, uniquement quand il est allumé.</p>
+  <dl class="params"><div class="prm"><dt>Pitch</dt><dd class="rng">±12 demi-tons</dd><dd class="txt">Transpose la voix en gardant ses formants : elle monte sans prendre une voix de dessin animé.</dd></div><div class="prm"><dt>Formant</dt><dd class="rng">±12 demi-tons</dd><dd class="txt">Change le caractère sans changer la note : vers le haut = voix plus petite et plus claire, vers le bas = plus grosse et plus sombre.</dd></div><div class="prm"><dt>Wide</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Ouvre l&#x27;effet en stéréo avec deux copies légèrement désaccordées (±10 cents). La somme mono ne change pas.</dd></div><div class="prm"><dt>Mix</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Le mélange avec la voix d&#x27;origine.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="ultrachorus" style="--c:#ff7ac0">
+  <header class="mod-head">
+    <span class="mod-pos">09</span>
+    <div>
+      <h3><i></i>ULTRACHORUS</h3>
+      <p class="mod-short">Chorus d&#x27;ensemble <span>· page EFFECTS</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Deux lignes à retard de type bucket-brigade bougées en sens inverse par une seule LFO lente : large et luxuriant, sans le flottement d&#x27;un chorus simple. Aucune latence.</p>
+  <dl class="params"><div class="prm"><dt>Mode</dt><dd class="rng">1 · 2 · 3 · 4</dd><dd class="txt">De subtil (1) à fort (4).</dd></div><div class="prm"><dt>Mix</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La quantité de chorus. La voix sèche reste à plein niveau.</dd></div><div class="prm"><dt>Width</dt><dd class="rng">0 – 150 %</dd><dd class="txt">L&#x27;ouverture stéréo : 0 = étroit, 150 % = très large.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="ultraflanger" style="--c:#5be3a0">
+  <header class="mod-head">
+    <span class="mod-pos">10</span>
+    <div>
+      <h3><i></i>ULTRAFLANGER</h3>
+      <p class="mod-short">Flanger <span>· page EFFECTS</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Un délai très court balayé par une LFO et mélangé à la voix : des creux qui bougent, d&#x27;un léger souffle d&#x27;air jusqu&#x27;au décollage d&#x27;avion. Aucune latence.</p>
+  <dl class="params"><div class="prm"><dt>Rate</dt><dd class="rng">0,02 – 5 Hz</dd><dd class="txt">La vitesse du balayage.</dd></div><div class="prm"><dt>Depth</dt><dd class="rng">0 – 100 %</dd><dd class="txt">L&#x27;amplitude du balayage.</dd></div><div class="prm"><dt>Manual</dt><dd class="rng">0,3 – 8 ms</dd><dd class="txt">Le centre du balayage : court = aigu et métallique, long = grave, proche d&#x27;un chorus.</dd></div><div class="prm"><dt>Feedback</dt><dd class="rng">−95 à +95 %</dd><dd class="txt">La résonance : positif = le jet classique, négatif = un son creux.</dd></div><div class="prm"><dt>Mix</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Le mélange sec / flangé. 50 % donne l&#x27;effet le plus profond.</dd></div><div class="prm"><dt>Stereo</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Gauche et droite balaient en décalé. 0 = balayage mono.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="ultradelay" style="--c:#ff8a3d">
+  <header class="mod-head">
+    <span class="mod-pos">11</span>
+    <div>
+      <h3><i></i>ULTRADELAY</h3>
+      <p class="mod-short">Delay créatif <span>· page EFFECTS</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Un écho calé sur le tempo, avec des filtres sur les répétitions, un caractère analogique et un ducking qui laisse la place à la voix.</p>
+  <dl class="params"><div class="prm"><dt>Sync</dt><dd class="rng">MS · HOST · BPM</dd><dd class="txt">MS : temps libre en millisecondes. HOST : suit le tempo du logiciel. BPM : ton propre tempo. Tap tempo pour le taper.</dd></div><div class="prm"><dt>Time / Division</dt><dd class="rng">1 ms – 4 s · 1/64T → 2 mesures</dd><dd class="txt">Le temps de l&#x27;écho, en ms ou en valeur rythmique : droite, pointée (D) ou triolet (T).</dd></div><div class="prm"><dt>Feedback</dt><dd class="rng">0 – 120 %</dd><dd class="txt">Le nombre de répétitions. Au-dessus de 100 % elles gonflent, tenues par un limiteur doux : jamais d&#x27;emballement.</dd></div><div class="prm"><dt>Mix</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La quantité d&#x27;écho.</dd></div><div class="prm"><dt>Bus / Insert</dt><dd class="rng">Bus · Insert</dd><dd class="txt">BUS : la voix reste à plein niveau, MIX ajoute seulement les échos, comme un départ auxiliaire. INSERT : MIX fait un fondu entre voix et échos.</dd></div><div class="prm"><dt>Duck</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La voix baisse les échos pendant qu&#x27;elle chante (jusqu&#x27;à −30 dB), ils reviennent entre les phrases.</dd></div><div class="prm"><dt>Stereo</dt><dd class="rng">Mono · Stéréo · Ping-pong · Wide</dd><dd class="txt">MONO : échos au centre. STÉRÉO : gauche et droite gardées. PING-PONG : les échos alternent G / D. WIDE : l&#x27;écho droit arrive 17 ms plus tard. Ø L / Ø R inversent la phase d&#x27;un côté.</dd></div><div class="prm"><dt>Width</dt><dd class="rng">0 – 150 %</dd><dd class="txt">La largeur stéréo des répétitions.</dd></div><div class="prm"><dt>High-pass / Low-pass</dt><dd class="rng">20 Hz – 5 kHz · 200 Hz – 20 kHz</dd><dd class="txt">Filtrent les répétitions seulement, pas la voix. LINK déplace les deux ensemble.</dd></div><div class="prm"><dt>Analog</dt><dd class="rng">Off · 1 à 4</dd><dd class="txt">Saturation dans la boucle, répétitions plus sombres, wow de bande et un léger souffle. Off = numérique propre.</dd></div><div class="prm"><dt>Mod depth / rate</dt><dd class="rng">0 – 100 % · 0,05 – 10 Hz</dd><dd class="txt">Fait bouger le temps de l&#x27;écho (jusqu&#x27;à ±4 ms) pour un mouvement proche du chorus.</dd></div><div class="prm"><dt>Solo</dt><dd class="rng">On / Off</dd><dd class="txt">N&#x27;écoute que les échos à plein niveau, pour les régler. Non sauvegardé dans les presets.</dd></div><div class="prm"><dt>Output</dt><dd class="rng">±18 dB</dd><dd class="txt">Le niveau des échos.</dd></div></dl>
+  
+</article>
+<article class="module reveal" id="ultraverb" style="--c:#8f7bff">
+  <header class="mod-head">
+    <span class="mod-pos">12</span>
+    <div>
+      <h3><i></i>ULTRAVERB</h3>
+      <p class="mod-short">Réverbération vintage <span>· page EFFECTS</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Huit algorithmes de réverbe, chacun avec sa propre structure, et trois couleurs d&#x27;époque. Le signal sec n&#x27;est jamais retardé et un EQ à 4 points agit sur la réverbe seule.</p>
+  <dl class="params"><div class="prm"><dt>Mode</dt><dd class="rng">8 algorithmes</dd><dd class="txt">Chaque mode est une structure différente, pas un preset (voir la liste ci-dessous).</dd></div><div class="prm"><dt>Colour</dt><dd class="rng">Clean · 1980s · 1970s</dd><dd class="txt">L&#x27;époque : Clean = moderne, pleine bande. 1980s = plus sombre, modulation plus bruitée. 1970s = 7 kHz, demi-fréquence, granuleux.</dd></div><div class="prm"><dt>Mix</dt><dd class="rng">0 – 100 %</dd><dd class="txt">Le dosage sec / réverbe à puissance égale. 100 % = réverbe seule, pour un départ / retour.</dd></div><div class="prm"><dt>Bus / Insert · Duck · Solo</dt><dd class="rng">—</dd><dd class="txt">Comme sur le delay : la voix reste pleine en BUS, DUCK baisse la réverbe pendant que la voix chante et la laisse fleurir entre les phrases, SOLO n&#x27;écoute que la réverbe.</dd></div><div class="prm"><dt>Decay</dt><dd class="rng">0,2 – 20 s</dd><dd class="txt">La durée de la queue.</dd></div><div class="prm"><dt>Pre-delay</dt><dd class="rng">0 – 500 ms</dd><dd class="txt">Le temps avant que la réverbe arrive : décolle la voix de l&#x27;espace.</dd></div><div class="prm"><dt>Size</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La taille perçue de l&#x27;espace.</dd></div><div class="prm"><dt>Attack</dt><dd class="rng">0 – 100 %</dd><dd class="txt">La vitesse à laquelle la réverbe se construit.</dd></div><div class="prm"><dt>Diffusion</dt><dd class="rng">Early · Late</dd><dd class="txt">Early : bas = échos audibles, haut = départ lisse. Late : la densité de la queue.</dd></div><div class="prm"><dt>Damping</dt><dd class="rng">1 – 20 kHz · −24 à 0 dB</dd><dd class="txt">Au-dessus de cette fréquence, la queue s&#x27;assombrit de cette quantité.</dd></div><div class="prm"><dt>Bass</dt><dd class="rng">50 – 1000 Hz · 0,25 – 4×</dd><dd class="txt">Les graves durent plus (&gt; 1) ou moins (&lt; 1) longtemps que les médiums.</dd></div><div class="prm"><dt>Modulation</dt><dd class="rng">0,05 – 5 Hz · 0 – 100 %</dd><dd class="txt">Le mouvement, le chorus et la largeur de la queue.</dd></div><div class="prm"><dt>Width</dt><dd class="rng">0 – 150 %</dd><dd class="txt">La largeur stéréo.</dd></div><div class="prm"><dt>Low cut / High cut</dt><dd class="rng">20 Hz – 2 kHz · 1 – 20 kHz</dd><dd class="txt">Nettoie le bas et le haut de la réverbe.</dd></div><div class="prm"><dt>EQ de réverbe</dt><dd class="rng">4 points</dd><dd class="txt">Double-clic sur le graphique pour ajouter un point (Bell, Low/High Shelf, Low/High Cut) qui n&#x27;agit que sur la réverbe.</dd></div><div class="prm"><dt>Output</dt><dd class="rng">−18 à +12 dB</dd><dd class="txt">Le niveau de la réverbe.</dd></div></dl>
+  <ul class="modes"><li><b>Room</b><span>petite pièce proche, réflexions denses</span></li><li><b>Ambience</b><span>présence et profondeur sans traînée</span></li><li><b>Chamber</b><span>chambre d&#x27;écho moyenne, chaude et diffuse</span></li><li><b>Hall</b><span>grande salle, montée lente, queue modulée</span></li><li><b>Plate</b><span>plaque : dense tout de suite, brillante et lisse</span></li><li><b>Vintage</b><span>hall numérique des années 80, queue granuleuse</span></li><li><b>Shimmer</b><span>hall avec une octave au-dessus dans la boucle, éthéré</span></li><li><b>Concert Hall</b><span>grand hall numérique début 80, attaque lente, ton sombre</span></li></ul>
+</article>
+<article class="module reveal" id="multi" style="--c:#ffd84a">
+  <header class="mod-head">
+    <span class="mod-pos">13</span>
+    <div>
+      <h3><i></i>MULTI</h3>
+      <p class="mod-short">Dynamique multibande <span>· page MULTI</span></p>
+    </div>
+  </header>
+  <p class="mod-intro">Jusqu&#x27;à six bandes posées librement sur le spectre. Chaque bande compresse, étend ou élargit ses propres fréquences, sans filtre de séparation et sans latence. Idéal pour tenir le boom 180–450 Hz ou la dureté 2,5–5 kHz seulement quand elle monte.</p>
+  <dl class="params"><div class="prm"><dt>Mode</dt><dd class="rng">Comp · Imager</dd><dd class="txt">COMP : compresseur multibande. IMAGER : largeur stéréo par bande.</dd></div><div class="prm"><dt>Bandes</dt><dd class="rng">jusqu&#x27;à 6</dd><dd class="txt">Double-clic sur l&#x27;affichage pour ajouter une bande, tire ses bords pour régler sa largeur, molette = seuil, clic droit = compress/expand, solo, bypass, supprimer.</dd></div><div class="prm"><dt>Compress / Expand</dt><dd class="rng">—</dd><dd class="txt">COMPRESS agit quand la bande passe au-dessus du seuil, EXPAND quand elle passe en dessous.</dd></div><div class="prm"><dt>Threshold</dt><dd class="rng">−60 à 0 dB</dd><dd class="txt">Le niveau de la bande où elle commence à agir (ligne pointillée).</dd></div><div class="prm"><dt>Range</dt><dd class="rng">±30 dB</dd><dd class="txt">Le maximum que la bande peut bouger. Négatif = réduction, positif = remontée.</dd></div><div class="prm"><dt>Ratio</dt><dd class="rng">1:1 à 20:1</dd><dd class="txt">La force de la réaction au-delà du seuil.</dd></div><div class="prm"><dt>Knee</dt><dd class="rng">0 – 24 dB</dd><dd class="txt">Un départ plus doux autour du seuil.</dd></div><div class="prm"><dt>Attack / Release</dt><dd class="rng">0,1 – 500 ms · 5 ms – 5 s</dd><dd class="txt">La vitesse de réaction et de retour de chaque bande.</dd></div><div class="prm"><dt>Gain</dt><dd class="rng">±18 dB</dd><dd class="txt">Le niveau propre de la bande, toujours appliqué.</dd></div><div class="prm"><dt>Width</dt><dd class="rng">0 – 200 %</dd><dd class="txt">Imager : 0 % = mono, 100 % = inchangé, 200 % = deux fois plus large. La somme mono ne change pas.</dd></div><div class="prm"><dt>Output</dt><dd class="rng">±24 dB</dd><dd class="txt">Le niveau de sortie de la section MULTI.</dd></div></dl>
+  
+</article>
+      <article class="module" id="global" style="--c:#cfe0ff">
+        <header class="mod-head"><span class="mod-pos">+</span><div><h3><i></i>GLOBAL</h3><p class="mod-short">La barre du haut</p></div></header>
+        <dl class="params">
+          <div class="prm"><dt>In / Out</dt><dd class="rng">±24 dB</dd><dd class="txt">Le niveau d'entrée et de sortie du plugin entier, avec leurs vu-mètres.</dd></div>
+          <div class="prm"><dt>Bypass</dt><dd class="rng">On / Off</dd><dd class="txt">Coupe tout le plugin pour comparer avec la voix d'origine.</dd></div>
+          <div class="prm"><dt>A · B · A&gt;B</dt><dd class="rng">2 mémoires</dd><dd class="txt">Deux réglages à comparer. A&gt;B copie le réglage courant dans l'autre mémoire.</dd></div>
+          <div class="prm"><dt>Presets</dt><dd class="rng">Save · Save as</dd><dd class="txt">Ta bibliothèque de presets, avec import / export. Rien n'est jamais écrasé sans te demander.</dd></div>
+          <div class="prm"><dt>Annuler / Rétablir</dt><dd class="rng">Cmd+Z</dd><dd class="txt">Les flèches en haut à droite annulent et rétablissent chaque changement.</dd></div>
+          <div class="prm"><dt>Auto Mix</dt><dd class="rng">quelques secondes</dd><dd class="txt">Écoute ta voix et propose un réglage complet de départ. Annulable d'un clic.</dd></div>
+          <div class="prm"><dt>Low Latency</dt><dd class="rng">≈ 5 ms</dd><dd class="txt">Pour enregistrer avec l'autotune dans le casque. Laisse-le éteint pour mixer, la qualité est meilleure.</dd></div>
+        </dl>
+      </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="installation">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">INSTALLATION</p>
+      <h2>Prêt en deux minutes.</h2>
+    </div>
+    <ol class="steps reveal">
+      <li><b>Télécharge le DMG</b><p>Ouvre-le : il contient l'installeur, un lisez-moi et un désinstalleur.</p></li>
+      <li><b>Lance « Installer ULTRAVOX.pkg »</b><p>La première fois, macOS dit qu'il ne peut pas vérifier le développeur. Fais <kbd>clic droit</kbd> › <kbd>Ouvrir</kbd> › <kbd>Ouvrir</kbd>, ou va dans Réglages Système › Confidentialité et sécurité › « Ouvrir quand même ». Ton mot de passe est demandé.</p></li>
+      <li><b>Relance ton logiciel audio</b><p>ULTRAVOX apparaît dans les effets audio (fabricant : Ultravox Audio). Dans Ableton : Préférences › Plug-ins › Rescan.</p></li>
+    </ol>
+    <div class="term">
+      <p>Si le plugin n'apparaît pas ou est refusé, colle cette ligne dans le Terminal puis relance ton logiciel&nbsp;:</p>
+      <div class="term-box"><code id="quar">sudo xattr -dr com.apple.quarantine /Library/Audio/Plug-Ins/VST3/ULTRAVOX.vst3 /Library/Audio/Plug-Ins/Components/ULTRAVOX.component /Applications/ULTRAVOX.app</code><button type="button" id="copy-quar" class="copy">Copier</button></div>
+    </div>
+    <div class="cta center"><a class="btn-dl big" href="https://github.com/saanofficiel-commits/ULTRAVOX/releases/download/v0.9.18/ULTRAVOX-0.9.18.dmg" rel="noopener">Télécharger pour Mac<span>DMG · 27 Mo · v0.9.18</span></a></div>
+  </div>
+</section>
+
+<section class="band" id="createur">
+  <div class="wrap">
+    <div class="maker reveal">
+      <img src="img/icon-256.png" alt="" width="88" height="88">
+      <div>
+        <p class="kicker">LE CRÉATEUR</p>
+        <h2>Un plugin fait par <span>Saan</span>.</h2>
+        <p>ULTRAVOX est conçu et développé par Saan, artiste, compositeur, réalisateur et ingénieur du son. Il l'a construit pour avoir sous la main la chaîne vocale qu'il utilise en studio, et il le partage gratuitement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="faq">
+  <div class="wrap narrow">
+    <div class="sec-head reveal"><p class="kicker">QUESTIONS</p><h2>Questions fréquentes</h2></div>
+    <details class="qa" open><summary>C&#x27;est vraiment gratuit ?</summary><p>Oui. Pas de compte, pas d&#x27;abonnement, pas de clé de licence. Tu télécharges, tu installes, tu l&#x27;utilises dans tes morceaux.</p></details><details class="qa"><summary>Ça marche sur Windows ?</summary><p>Pas encore : cette version est pour Mac uniquement (macOS 11 Big Sur ou plus récent, Apple Silicon et Intel).</p></details><details class="qa"><summary>Dans quels logiciels ?</summary><p>Tous ceux qui chargent les plugins VST3 ou AU : Ableton Live, Logic Pro, FL Studio, Reaper, Studio One, Cubase, GarageBand (AU)… Il existe aussi en application autonome.</p></details><details class="qa"><summary>Pourquoi macOS dit qu&#x27;il ne peut pas vérifier le développeur ?</summary><p>Le plugin n&#x27;est pas signé avec un compte Apple Developer payant. Il suffit de faire clic droit › Ouvrir sur l&#x27;installeur la première fois (détails dans la section Installation).</p></details><details class="qa"><summary>Quelle latence ?</summary><p>0,1 ms quand l&#x27;autotune et UltraPitch sont éteints. Environ 32 ms quand ils sont allumés, compensés automatiquement par ton logiciel. En mode LOW LATENCY, environ 5 ms pour enregistrer.</p></details><details class="qa"><summary>Il y a des presets d&#x27;usine ?</summary><p>Non, volontairement : la bibliothèque démarre vide et tu y ranges tes propres réglages. AUTO MIX te donne un bon point de départ en quelques secondes.</p></details><details class="qa"><summary>Comment le désinstaller ?</summary><p>Double-clique « Desinstaller ULTRAVOX.command » dans le DMG, ou supprime ULTRAVOX.vst3 et ULTRAVOX.component dans /Library/Audio/Plug-Ins et ULTRAVOX.app dans Applications.</p></details>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="brand"><img src="img/icon-256.png" alt="" width="28" height="28"><span>ULTRAVOX</span></div>
+    <p><a href="../index.html">Accueil</a> · Vocal channel v0.9.18 · Développé par Saan · <a href="../ultrasynth/index.html">ULTRASYNTH</a> · Gratuit pour Mac</p>
+  </div>
+</footer>
+<script>(function(){
+  document.documentElement.classList.add('js');
+  var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // hero plugin: tilted back at first, straightens and grows as you scroll
+  var hs = document.getElementById('hero-shot'), ticking = false;
+  function tilt(){ ticking = false; if (!hs) return;
+    var r = hs.getBoundingClientRect(), vh = innerHeight || 800;
+    var p = Math.min(1, Math.max(0, (vh - r.top) / (vh * 0.85) - 0.25));
+    hs.style.setProperty('--p', still ? 1 : p.toFixed(3));
+  }
+  addEventListener('scroll', function(){ if (!ticking) { ticking = true; requestAnimationFrame(tilt); } }, { passive: true });
+  addEventListener('resize', tilt); tilt();
+  // fade sections in as they arrive
+  var rv = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && !still) {
+    var ro = new IntersectionObserver(function(es){ es.forEach(function(en){ if (en.isIntersecting) { en.target.classList.add('in'); ro.unobserve(en.target); } }); }, { rootMargin: '0px 0px -8% 0px' });
+    rv.forEach(function(el){ ro.observe(el); });
+  } else { rv.forEach(function(el){ el.classList.add('in'); }); }
+
+  // screenshot tabs
+  var tabs = document.querySelectorAll('.tab'), shots = document.querySelectorAll('.shot');
+  tabs.forEach(function(t){ t.addEventListener('click', function(){
+    tabs.forEach(function(x){ var on = x === t; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    shots.forEach(function(s){ s.hidden = s.dataset.shot !== t.dataset.shot; });
+  }); });
+  // copy terminal command
+  var b = document.getElementById('copy-quar'), code = document.getElementById('quar');
+  if (b) b.addEventListener('click', function(){
+    var done = function(){ b.textContent = 'Copié'; setTimeout(function(){ b.textContent = 'Copier'; }, 1800); };
+    var select = function(){ var r = document.createRange(); r.selectNodeContents(code); var s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Sélectionné'; };
+    try { navigator.clipboard.writeText(code.textContent).then(done, select); } catch (e) { select(); }
+  });
+  // highlight the current module in the index
+  var links = {}; document.querySelectorAll('.mod-index a').forEach(function(a){ links[a.getAttribute('href').slice(1)] = a; });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(es){ es.forEach(function(en){
+      if (en.isIntersecting) { Object.keys(links).forEach(function(k){ links[k].classList.toggle('on', k === en.target.id); }); }
+    }); }, { rootMargin: '-40% 0px -55% 0px' });
+    document.querySelectorAll('.module').forEach(function(m){ io.observe(m); });
+  }
+})();
+</script>
+</body>
+</html>
