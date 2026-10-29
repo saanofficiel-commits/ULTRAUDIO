@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contact · Ultravox Audio</title>
+<meta name="description" content="Contacter Saan pour une question sur ULTRAVOX ou ULTRASYNTH, une licence ou un remboursement.">
+<link rel="icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..900&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="pages.css">
+</head>
+<body>
+<div class="liquid" aria-hidden="true"><span class="lq lq1"></span><span class="lq lq2"></span><span class="glow g1"></span><span class="glow g2"></span><span class="vig"></span></div>
+<header class="top"><a class="home" href="index.html">ULTRAVOX AUDIO · PAR SAAN</a><nav class="nav" aria-label="Pages"><a href="index.html">Accueil</a><a href="acheter.html">Acheter</a><a href="cgv.html">CGV</a><a href="contact.html" aria-current="page">Contact</a></nav></header>
+
+<main class="page doc">
+  <h1>Contact</h1>
+  <p>Une question sur un plugin, ta licence, une facture ou un remboursement ? Écris-moi, je réponds en général sous 48 heures.</p>
+  <div class="mail"><code>contact@majorelmusic.com</code><button type="button" data-copy="contact@majorelmusic.com">Copier</button></div>
+  <h2>Pour aller plus vite</h2>
+  <ul><li>Ton numéro de commande (dans l'e-mail de facture)</li><li>Le plugin et sa version</li><li>Ton modèle de Mac, ta version de macOS et ton logiciel audio</li></ul>
+  <p>Tu peux aussi m'écrire directement : <a href="mailto:contact@majorelmusic.com">contact@majorelmusic.com</a></p>
+</main>
+<footer>macOS 11+ · Apple Silicon &amp; Intel · VST3 · AU · Standalone<br><a href="cgv.html">CGV et remboursements</a> · <a href="contact.html">Contact</a></footer>
+<script>document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){var t=b.getAttribute('data-copy');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent='Copié'},function(){var r=document.createRange();r.selectNodeContents(b.previousElementSibling);var s=getSelection();s.removeAllRanges();s.addRange(r)})})});</script>
+</body>
+</html>
